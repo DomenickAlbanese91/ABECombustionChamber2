@@ -1,0 +1,119 @@
+PART 2 (VARIOUS INITIAL MACH NUMBERS)
+//Domenick Albanese
+//March 22, 2016
+//MAE 4261-01
+//Air-Breathing Engines: Computer Project
+
+
+
+#include <iostream>
+#include <stdio.h>
+#include <cmath>
+using namespace std;
+
+
+
+//Create Matrix:
+int main()
+{
+
+	FILE * outfile_s;
+	fopen_s(&outfile_s, "ABEComputerProjectPART2.txt", "w");
+
+
+	double M[101], m[101], To[101], T[101], P[101], Po[101], D[101], A[101], Ao[101], Tt[101], F[101]; //(mach, temp, total pressure,static pressure)These values will be part of the codes iteration process to obtain data points and exit mach
+	double G, fc, Pi, dx, L[101];
+	double PRatio, SPRatio, STRatio;
+	double number;
+
+
+	G = 1.3;//gamma
+	fc = 0.035; //friction factor
+	dx = 0.005; //(.5/100)
+	//Initial Iteration Values for Changing Variables
+	D[0] = 0.125; //initial diameter
+	Po[0] = 2100; //Initial pressure (kPa)
+	Pi = 4.0*atan(1);
+	Ao[0] = Pi*pow(0.0625, 2); //Initial Area (Pi*(D/2)^2)
+	To[0] = 650;
+	M[0] = 0.15; //Initial Mach #
+	m[0] = 0;
+	L[0] = 0;
+	//Final Values for Changing Variables
+
+	T[0] = To[0] / (1 + (((G - 1) / 2)*pow(M[0], 2)));
+
+	P[0] = Po[0] * (pow(T[0] / To[0], (G / (G - 1))));
+
+
+	//Changing diameter
+	for (int i = 1; i < 101; i++){
+
+		D[i] = D[0] - (i)*0.00025;
+		To[i] = To[0] + (i)* 7;
+		Ao[i] = Ao[0] - (i)*0.000044178;
+
+	}
+
+
+	//Changing properties
+	for (int i = 1; i < 11; i++){
+
+
+		A[i] = (Ao[i] - Ao[i - 1]) / Ao[i - 1];
+
+		Tt[i] = (To[i] - To[i - 1]) / To[i - 1];
+
+		F[i] = (4 * fc*dx) / D[i];
+
+	}
+
+	//Final flow properties
+	fprintf(outfile_s, " Mo      Mach    PRatio  SPRatio STRatio\n");
+
+	for (int j = 1; j < 11; j++){ // for changing initial mach number
+		m[j] = m[0] + (j)*0.025;
+		M[0] = m[j];
+		
+
+
+		for (int i = 1; i < 101; i++){
+
+			T[i] = ((((G - 1)*pow(M[i - 1], 2)) / (1 - pow(M[i - 1], 2)))*A[i]
+				+ (((1 - G*pow(M[i - 1], 2)) * (1 + (G - 1) / 2)* pow(M[i - 1], 2)) / (1 - pow(M[i - 1], 2)))*Tt[i]
+				- ((G*(G - 1)*pow(M[i - 1], 4)) / (2 * (1 - pow(M[i - 1], 2))))*F[i])*T[i - 1] + T[i - 1];
+
+			P[i] = (((G*pow(M[i - 1], 2)) / (1 - pow(M[i - 1], 2)))*A[i]
+				- (((G*pow(M[i - 1], 2)) * ((1 + (G - 1) / 2)* pow(M[i - 1], 2))) / (1 - pow(M[i - 1], 2)))*Tt[i]
+				- ((G*pow(M[i - 1], 2)*(1 + (G - 1)*pow(M[i - 1], 2))) / (2 * (1 - pow(M[i - 1], 2))))*F[i])*P[i - 1] + P[i - 1];
+
+			Po[i] = ((-(G*pow(M[i - 1], 2)) / 2)*Tt[i] - ((G*pow(M[i - 1], 2)) / 2)*F[i])*Po[i - 1] + Po[i - 1];
+
+			M[i] = sqrt((((-2 * (1 + ((G - 1) / 2)* pow(M[i - 1], 2))) / (1 - pow(M[i - 1], 2)))*A[i]
+				+ (((1 + G*pow(M[i - 1], 2)) * (1 + (((G - 1) / 2)* pow(M[i - 1], 2)))) / (1 - pow(M[i - 1], 2)))*Tt[i]
+				+ (((G*pow(M[i - 1], 2)) * (1 + ((G - 1) / 2)* pow(M[i - 1], 2))) / (1 - pow(M[i - 1], 2)))*F[i])*pow(M[i - 1], 2) + pow(M[i - 1], 2));
+
+		}
+
+		fprintf(outfile_s, "%6.3f", m[j]);
+		fprintf(outfile_s, "\t");
+		fprintf(outfile_s, "%6.3f", M[j]);
+		fprintf(outfile_s, "\t");
+		fprintf(outfile_s, "%6.3f", Po[j] / Po[0]);
+		fprintf(outfile_s, "\t");
+		fprintf(outfile_s, "%6.3f", P[j] / Po[0]);
+		fprintf(outfile_s, "\t");
+		fprintf(outfile_s, "%6.3f", T[j] / T[0]);
+		fprintf(outfile_s, "\n");
+
+	}
+	
+	fclose(outfile_s);
+
+	printf("Press enter to continue..."); //*include in future programs so i/o screen does not automatically close*
+	getchar();
+	while (getchar() != '\n');
+
+
+	return 0;
+
