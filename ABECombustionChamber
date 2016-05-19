@@ -1,10 +1,4 @@
 PART 2 (VARIOUS INITIAL MACH NUMBERS)
-//Domenick Albanese
-//March 22, 2016
-//MAE 4261-01
-//Air-Breathing Engines: Computer Project
-
-
 
 #include <iostream>
 #include <stdio.h>
